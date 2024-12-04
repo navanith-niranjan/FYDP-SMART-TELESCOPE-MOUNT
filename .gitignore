@@ -5,7 +5,7 @@
 *.html
 *.idea
 *.jpeg
-# *.jpg
+*.jpg
 *.log
 *.npy
 *.npy
