@@ -64,7 +64,7 @@ def process_image(image_path):
         subprocess.run(cmd, check=True)
         print(f"Solution found for {image_path}")
 
-        wcs_file = os.path.join(output_location, os.path.basename(image_path), ".wcs")
+        wcs_file = os.path.join(output_location, os.path.splitext(os.path.basename(image_path))[0] + ".wcs")
         solution = extract_from_wcs(wcs_file)
         print(solution)
 
