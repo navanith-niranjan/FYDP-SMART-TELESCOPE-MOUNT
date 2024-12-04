@@ -25,8 +25,10 @@ def write_to_serial(data):
         with serial.Serial(port, baudrate, timeout=1) as ser:
             ser.write(data)
             ser.flush()
+            return True
     except serial.SerialException as e:
         print(f"Serial communication error: {e}")
+        return False
 
 # Function to extract RA and Dec from a .wcs file
 def extract_from_wcs(wcs_file):
@@ -75,11 +77,10 @@ def extract_from_wcs(wcs_file):
             message.extend([end_byte])
 
             # Send the data to ESP32
-            try:
-                write_to_serial(bytes(message))  # Send the complete message as bytes
-                return "Calibration data sent to ESP32"
-            except Exception as e:
-                return f"Error sending data to ESP32: {e}"
+            if write_to_serial(bytes(message)):
+                return "Calibration data successfully sent to ESP32."
+            else:
+                return "Error: Failed to send data to ESP32."
     
         else:
             return "RA/Dec not found in the .wcs file."
