@@ -19,7 +19,7 @@ allowed_extensions = {".jpg", ".png", ".fits"}
 
 # Function to send RA and DEC to the ESP32
 def write_to_serial(data):
-    port = 'COM5'
+    port = 'COM5' # NEED TO CHANGE THIS ACCORDINGLY
     baudrate = 115200 # Replace with your ESP32's baud rate
     try:
         with serial.Serial(port, baudrate, timeout=1) as ser:
@@ -75,9 +75,11 @@ def extract_from_wcs(wcs_file):
             message.extend([end_byte])
 
             # Send the data to ESP32
-            write_to_serial(bytes(message))  # Send the complete message as bytes
-
-            return "Calibration data sent to ESP32"
+            try:
+                write_to_serial(bytes(message))  # Send the complete message as bytes
+                return "Calibration data sent to ESP32"
+            except Exception as e:
+                return f"Error sending data to ESP32: {e}"
     
         else:
             return "RA/Dec not found in the .wcs file."
