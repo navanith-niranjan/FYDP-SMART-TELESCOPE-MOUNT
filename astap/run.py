@@ -16,6 +16,8 @@ allowed_extensions = {".jpg", ".png", ".fits"}
 
 # Function to process each image
 def process_image(image_path):
+    output_file = os.path.join(output_location, os.path.basename(image_path))
+
     cmd = [
            astap_cli, 
            "-f", image_path, 
@@ -23,7 +25,7 @@ def process_image(image_path):
            "-fov", "0", 
            "-d", database_location, 
            "-D", "w08", 
-           "-o", output_location
+           "-o", output_file
         ]
 
     try:
