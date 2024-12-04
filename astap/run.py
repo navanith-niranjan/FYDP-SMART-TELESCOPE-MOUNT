@@ -2,6 +2,8 @@ import os
 import shutil
 import subprocess
 import time
+from astropy.coordinates import Angle
+from astropy import units as u
 
 # Directories
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -13,6 +15,35 @@ astap_cli = "/usr/bin/astap_cli"
 
 # Allowed file extensions
 allowed_extensions = {".jpg", ".png", ".fits"}
+
+# Function to extract RA and Dec from a .wcs file
+def extract_from_wcs(wcs_file):
+    try:
+        with open(wcs_file, 'r') as file:
+            lines = file.readlines()
+
+        ra_deg = None
+        dec_deg = None
+
+        for line in lines:
+            if 'CRVAL1' in line:
+                ra_deg = float(line.split('=')[1].strip().split()[0])
+            elif 'CRVAL2' in line:
+                dec_deg = float(line.split('=')[1].strip().split()[0])
+
+        if ra_deg is not None and dec_deg is not None:
+            ra_angle = Angle(ra_deg, u.deg)
+            ra_hms = ra_angle.to_string(unit=u.hour, sep=' ', precision=1)
+
+            dec_angle = Angle(dec_deg, u.deg)
+            dec_dms = dec_angle.to_string(unit=u.deg, sep=' ', alwayssign=True, precision=0)
+
+            return f"Solution found: {ra_hms} {dec_dms}"
+        else:
+            return "RA/Dec not found in the .wcs file."
+        
+    except Exception as e:
+        return f"Error reading WCS file: {e}"
 
 # Function to process each image
 def process_image(image_path):
@@ -26,13 +57,17 @@ def process_image(image_path):
            "-d", database_location, 
            "-D", "w08", 
            "-o", output_file,
-           "-log",
         ]
 
     try:
         print(f"Processing {image_path}...")
         subprocess.run(cmd, check=True)
         print(f"Solution found for {image_path}")
+
+        wcs_file = os.path.join(output_location, os.path.basename(image_path), ".wcs")
+        solution = extract_from_wcs(wcs_file)
+        print(solution)
+
         return True
     except subprocess.CalledProcessError:
         print(f"Error processing {image_path}")
