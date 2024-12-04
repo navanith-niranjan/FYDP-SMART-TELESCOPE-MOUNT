@@ -25,7 +25,8 @@ def process_image(image_path):
            "-fov", "0", 
            "-d", database_location, 
            "-D", "w08", 
-           "-o", output_file
+           "-o", output_file,
+           "-log",
         ]
 
     try:
