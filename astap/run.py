@@ -7,12 +7,24 @@ import time
 script_dir = os.path.dirname(os.path.abspath(__file__))
 unstaged_dir = os.path.join(script_dir, "images", "unstaged")
 staged_dir = os.path.join(script_dir, "images", "staged")
-database_location = "databases"
+database_location = os.path.join(script_dir, "databases")
+output_location = os.path.join(script_dir, "output")
 astap_cli = "/usr/bin/astap_cli"
+
+# Allowed file extensions
+allowed_extensions = {".jpg", ".png", ".fits"}
 
 # Function to process each image
 def process_image(image_path):
-    cmd = [astap_cli, "-f", image_path, "-d", database_location, "-D", "w08"]
+    cmd = [
+           astap_cli, 
+           "-f", image_path, 
+           "-r", "60", 
+           "-fov", "0", 
+           "-d", database_location, 
+           "-D", "w08", 
+           "-o", output_location
+        ]
 
     try:
         print(f"Processing {image_path}...")
@@ -24,7 +36,7 @@ def process_image(image_path):
         return False
 
 def process_all_images():
-    images = [f for f in os.listdir(unstaged_dir) if os.path.isfile(os.path.join(unstaged_dir, f))]
+    images = [f for f in os.listdir(unstaged_dir) if os.path.isfile(os.path.join(unstaged_dir, f)) and os.path.splitext(f)[1].lower() in allowed_extensions]
     
     for image in images:
         image_path = os.path.join(unstaged_dir, image)
