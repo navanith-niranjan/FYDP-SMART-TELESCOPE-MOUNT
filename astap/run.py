@@ -4,8 +4,9 @@ import subprocess
 import time
 
 # Directories
-unstaged_dir = "images/unstaged"
-staged_dir = "images/staged"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+unstaged_dir = os.path.join(script_dir, "images", "unstaged")
+staged_dir = os.path.join(script_dir, "images", "staged")
 database_location = "databases"
 astap_cli = "/usr/bin/astap_cli"
 
