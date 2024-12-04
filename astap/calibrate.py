@@ -17,10 +17,12 @@ astap_cli = "/usr/bin/astap_cli"
 # Allowed file extensions
 allowed_extensions = {".jpg", ".png", ".fits"}
 
+# ESP32 Configuration
+port = '/dev/ttyUSB0'
+baudrate = 115200
+
 # Function to send RA and DEC to the ESP32
 def write_to_serial(data):
-    port = 'COM5' # NEED TO CHANGE THIS ACCORDINGLY
-    baudrate = 115200 # Replace with your ESP32's baud rate
     try:
         with serial.Serial(port, baudrate, timeout=1) as ser:
             ser.write(data)
@@ -29,6 +31,18 @@ def write_to_serial(data):
     except serial.SerialException as e:
         print(f"Serial communication error: {e}")
         return False
+
+# TESTING PURPOSES ONLY
+def read_serial():
+    try:
+        with serial.Serial(port, baudrate, timeout=1) as ser:
+            print("Listening for data from ESP32...")
+            while True:
+                if ser.in_waiting > 0:
+                    data = ser.read_until(b'\xFF')  # Read until the end byte
+                    print(f"Received: {data}")
+    except serial.SerialException as e:
+        print(f"Error opening serial port: {e}")
 
 # Function to extract RA and Dec from a .wcs file
 def extract_from_wcs(wcs_file):
@@ -78,6 +92,7 @@ def extract_from_wcs(wcs_file):
 
             # Send the data to ESP32
             if write_to_serial(bytes(message)):
+                read_serial() # FOR TESTING PURPOSES ONLY
                 return "Calibration data successfully sent to ESP32."
             else:
                 return "Error: Failed to send data to ESP32."
