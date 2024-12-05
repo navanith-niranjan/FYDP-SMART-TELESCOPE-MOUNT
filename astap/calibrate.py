@@ -33,16 +33,16 @@ def write_to_serial(data):
         return False
 
 # TESTING PURPOSES ONLY
-def read_serial():
-    try:
-        with serial.Serial(port, baudrate, timeout=1) as ser:
-            print("Listening for data from ESP32...")
-            while True:
-                if ser.in_waiting > 0:
-                    data = ser.read_until(b'\xFF')  # Read until the end byte
-                    print(f"Received: {data}")
-    except serial.SerialException as e:
-        print(f"Error opening serial port: {e}")
+# def read_serial():
+#     try:
+#         with serial.Serial(port, baudrate, timeout=1) as ser:
+#             print("Listening for data from ESP32...")
+#             while True:
+#                 if ser.in_waiting > 0:
+#                     data = ser.read_until(b'\xFF')  # Read until the end byte
+#                     print(f"Received: {data}")
+#     except serial.SerialException as e:
+#         print(f"Error opening serial port: {e}")
 
 # Function to extract RA and Dec from a .wcs file
 def extract_from_wcs(wcs_file):
@@ -61,10 +61,9 @@ def extract_from_wcs(wcs_file):
 
         if ra_deg is not None and dec_deg is not None:
             ra_angle = Angle(ra_deg, u.deg)
-            ra_hms = ra_angle.to_string(unit=u.hour, sep=' ', precision=1)
-
+            # ra_hms = ra_angle.to_string(unit=u.hour, sep=' ', precision=1)
             dec_angle = Angle(dec_deg, u.deg)
-            dec_dms = dec_angle.to_string(unit=u.deg, sep=' ', alwayssign=True, precision=0)
+            # dec_dms = dec_angle.to_string(unit=u.deg, sep=' ', alwayssign=True, precision=0)
 
             # Construct the message
             def compute_checksum(data):
@@ -77,9 +76,10 @@ def extract_from_wcs(wcs_file):
             start_byte = 0x01
             end_byte = 0xFF
             type_bytes = b'CALIBRATION'
-
-            ra_bytes = ra_hms.encode('utf-8')
-            dec_bytes = dec_dms.encode('utf-8')
+            
+            # RA and DEC converted from angle to bytes
+            ra_bytes = ra_angle.encode('utf-8')
+            dec_bytes = dec_angle.encode('utf-8')
 
             message = bytearray()
             message.extend([start_byte])
@@ -92,7 +92,8 @@ def extract_from_wcs(wcs_file):
 
             # Send the data to ESP32
             if write_to_serial(bytes(message)):
-                read_serial() # FOR TESTING PURPOSES ONLY
+                # read_serial() # FOR TESTING PURPOSES ONLY
+                print(message)
                 return "Calibration data successfully sent to ESP32."
             else:
                 return "Error: Failed to send data to ESP32."
