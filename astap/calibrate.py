@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import time
 import serial
+import struct
 from astropy.coordinates import Angle
 from astropy import units as u
 
@@ -65,9 +66,6 @@ def extract_from_wcs(wcs_file):
             dec_angle = Angle(dec_deg, u.deg)
             dec_dms = dec_angle.to_string(unit=u.deg, sep=' ', alwayssign=True, precision=0)
 
-            ra = str(ra_deg)
-            dec = str(dec_deg)
-
             # Construct the message
             def compute_checksum(data):
                 checksum = 0
@@ -77,18 +75,14 @@ def extract_from_wcs(wcs_file):
                 return checksum
 
             start_byte = 0x01
+            type_byte = 0x01
             end_byte = 0xFF
-            type_bytes = b'CALIBRATION'
             
             # RA and DEC converted from angle to bytes
-            ra_bytes = ra.encode('utf-8')
-            dec_bytes = dec.encode('utf-8')
+            ra_bytes = struct.pack('f', ra_deg)
+            dec_bytes = struct.pack('f', dec_deg)
 
-            message = bytearray()
-            message.extend([start_byte])
-            message.extend(type_bytes)
-            message.extend(ra_bytes)
-            message.extend(dec_bytes)
+            message = bytearray([start_byte, type_byte, ra_bytes, dec_bytes])
             checksum = compute_checksum(message)
             message.extend([checksum])
             message.extend([end_byte])
