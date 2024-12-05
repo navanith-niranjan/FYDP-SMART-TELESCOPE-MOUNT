@@ -61,9 +61,12 @@ def extract_from_wcs(wcs_file):
 
         if ra_deg is not None and dec_deg is not None:
             ra_angle = Angle(ra_deg, u.deg)
-            # ra_hms = ra_angle.to_string(unit=u.hour, sep=' ', precision=1)
+            ra_hms = ra_angle.to_string(unit=u.hour, sep=' ', precision=1)
             dec_angle = Angle(dec_deg, u.deg)
-            # dec_dms = dec_angle.to_string(unit=u.deg, sep=' ', alwayssign=True, precision=0)
+            dec_dms = dec_angle.to_string(unit=u.deg, sep=' ', alwayssign=True, precision=0)
+
+            ra = str(ra_deg)
+            dec = str(dec_deg)
 
             # Construct the message
             def compute_checksum(data):
@@ -78,8 +81,8 @@ def extract_from_wcs(wcs_file):
             type_bytes = b'CALIBRATION'
             
             # RA and DEC converted from angle to bytes
-            ra_bytes = ra_angle.encode('utf-8')
-            dec_bytes = dec_angle.encode('utf-8')
+            ra_bytes = ra.encode('utf-8')
+            dec_bytes = dec.encode('utf-8')
 
             message = bytearray()
             message.extend([start_byte])
