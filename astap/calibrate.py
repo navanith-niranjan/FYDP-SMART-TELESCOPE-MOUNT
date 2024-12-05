@@ -82,7 +82,9 @@ def extract_from_wcs(wcs_file):
             ra_bytes = struct.pack('f', ra_deg)
             dec_bytes = struct.pack('f', dec_deg)
 
-            message = bytearray([start_byte, type_byte, ra_bytes, dec_bytes])
+            message = bytearray([start_byte, type_byte])
+            message.extend(ra_bytes)
+            message.extend(dec_bytes)
             checksum = compute_checksum(message)
             message.extend([checksum])
             message.extend([end_byte])
