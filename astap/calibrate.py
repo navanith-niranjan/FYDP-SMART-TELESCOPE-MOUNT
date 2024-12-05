@@ -79,8 +79,8 @@ def extract_from_wcs(wcs_file):
             end_byte = 0xFF
             
             # RA and DEC converted from angle to bytes
-            ra_bytes = struct.pack('f', ra_deg)
-            dec_bytes = struct.pack('f', dec_deg)
+            ra_bytes = struct.pack('d', ra_deg)
+            dec_bytes = struct.pack('d', dec_deg)
 
             message = bytearray([start_byte, type_byte])
             message.extend(ra_bytes)
@@ -92,7 +92,7 @@ def extract_from_wcs(wcs_file):
             # Send the data to ESP32
             if write_to_serial(bytes(message)):
                 # read_serial() # FOR TESTING PURPOSES ONLY
-                print(message)
+                print("Bytes:", ' '.join(f'{byte:02X}' for byte in message))
                 return "Calibration data successfully sent to ESP32."
             else:
                 return "Error: Failed to send data to ESP32."
