@@ -4,9 +4,19 @@ from typing import List
 import asyncio
 import serial
 
-from fastapi.responses import HTMLResponse
-
 app = FastAPI()
+
+origins = [
+    "http://192.168.141.2:8000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ConnectionManager:
     def __init__(self):
@@ -53,65 +63,12 @@ class ConnectionManager:
             self.esp32_connections.remove(websocket)
             print("ESP32 is disconnected!")
 
-html = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>TEST ENVIRONMENT</title>
-    </head>
-    <body style="background-color: #FF474C;">
-        <h1>CLIENT</h1>
-        <div class="dpad">
-            <button class="dpad-button" onclick="sendCommand('up')">UP</button>
-            <div class="dpad-row">
-                <button class="dpad-button" onclick="sendCommand('left')">LEFT</button>
-                <button class="dpad-button" onclick="sendCommand('right')">RIGHT</button>
-            </div>
-            <button class="dpad-button" onclick="sendCommand('down')">DOWN</button>
-        </div>
-        <script>
-            var ws = new WebSocket("ws://" + window.location.host + "/ws/client");
-            
-            console.log(window.location.host)
 
-            ws.binaryType = "arraybuffer";
-
-            ws.onopen = function(event) {
-                console.log("WebSocket is open now.");
-            };
-
-            ws.onclose = function(event) {
-                console.log("WebSocket is closed now.");
-            };
-
-            function sendCommand(direction) {
-                let commandCode = getCommandCode(direction);
-                let buffer = new Uint8Array([commandCode]);
-                ws.send(buffer);
-            }
-
-            function getCommandCode(direction) {
-                switch(direction) {
-                    case 'up':
-                        return 1;
-                    case 'down':
-                        return 2;
-                    case 'left':
-                        return 3;
-                    case 'right':
-                        return 4;
-                    default:
-                        return 0;
-                }
-            }
-        </script>
-    </body>
-</html>
-"""
+# Routing
 
 @app.get("/")
 async def get():
-    return HTMLResponse(html)
+    return ""
 
 # For D-Pad Movement in real-time using WebSockets
 manager = ConnectionManager()
