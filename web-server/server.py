@@ -7,7 +7,7 @@ import serial
 app = FastAPI()
 
 origins = [
-    "http://192.168.141.2:8000",
+    "http://192.168.141.1:3000",
 ]
 
 app.add_middleware(
@@ -39,7 +39,7 @@ class ConnectionManager:
         loop = asyncio.get_event_loop()
 
         def write_to_serial(data):
-            port = 'COM5'
+            port = '/dev/ttyUSB0'
             baudrate = 115200 # Replace with your ESP32's baud rate
             try:
                 with serial.Serial(port, baudrate, timeout=1) as ser:
