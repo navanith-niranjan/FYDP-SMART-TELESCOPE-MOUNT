@@ -40,7 +40,7 @@ class ConnectionManager:
 
         def write_to_serial(data):
             port = '/dev/ttyUSB0'
-            baudrate = 115200 # Replace with your ESP32's baud rate
+            baudrate = 115200
             try:
                 with serial.Serial(port, baudrate, timeout=1) as ser:
                     ser.write(data)
@@ -48,7 +48,6 @@ class ConnectionManager:
             except serial.SerialException as e:
                 print(f"Serial communication error: {e}")
 
-        # Run the blocking serial write operation in an executor
         await loop.run_in_executor(None, write_to_serial, data)
 
         # For sending data when ESP32 connected to wireless Network
@@ -62,7 +61,6 @@ class ConnectionManager:
         elif websocket in self.esp32_connections:
             self.esp32_connections.remove(websocket)
             print("ESP32 is disconnected!")
-
 
 # Routing
 
