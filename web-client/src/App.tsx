@@ -10,7 +10,7 @@ import { DraftingCompass, Locate} from "lucide-react";
 const App = () => {
   // 192.168.141.1
 
-  const fastURL = "http://localhost:8000/"
+  const fastURL = "http://192.168.141.1:8000/"
 
   const [calibrateMessage, setCalibrateMessage] = useState("Not Calibrated")
 
