@@ -41,7 +41,7 @@ const Catalog = () => {
         const parsedData = parseCSV(csvText);
         setData(parsedData);
 
-        const objects = parsedData.slice(1).map((row) => row[0]); // Skip header
+        const objects = parsedData.slice(1).map((row) => row[0]);
         setCelestialObjects(objects);
       })
       .catch((error) => console.error("Error fetching the CSV file:", error));

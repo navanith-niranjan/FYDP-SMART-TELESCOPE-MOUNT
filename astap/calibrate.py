@@ -4,6 +4,7 @@ import subprocess
 import time
 import serial
 import struct
+import json
 from astropy.coordinates import Angle
 from astropy import units as u
 
@@ -17,6 +18,9 @@ astap_cli = "/usr/bin/astap_cli"
 
 # Allowed file extensions
 allowed_extensions = {".jpg", ".png", ".fits"}
+
+# Path for status file used for plate solving confirmation
+status_file = os.path.join(script_dir, "status.json")
 
 # ESP32 Configuration
 port = '/dev/ttyUSB0'
@@ -32,6 +36,14 @@ def write_to_serial(data):
     except serial.SerialException as e:
         print(f"Serial communication error: {e}")
         return False
+
+# Function to update status of plate-solving to send back to client
+def update_status(image_name, status, ra, dec):
+    try:
+        with open(status_file, "w") as f:
+            json.dump({"image": image_name, "status": status, "ra": ra, "dec": dec}, f)
+    except Exception as e:
+        print(f"Error writing to status file: {e}")
 
 # TESTING PURPOSES ONLY
 # def read_serial():
@@ -93,12 +105,12 @@ def extract_from_wcs(wcs_file):
             if write_to_serial(bytes(message)):
                 # read_serial() # FOR TESTING PURPOSES ONLY
                 print("Bytes:", ' '.join(f'{byte:02X}' for byte in message))
-                return "Calibration data successfully sent to ESP32."
+                return [ra_deg, dec_deg, "Calibration data successfully sent to ESP32."]
             else:
-                return "Error: Failed to send data to ESP32."
+                return [ra_deg, dec_deg, "Error: Failed to send data to ESP32."]
     
         else:
-            return "RA/Dec not found in the .wcs file."
+            return [ra_deg, dec_deg, "RA/Dec not found in the .wcs file."]
         
     except Exception as e:
         return f"Error reading WCS file: {e}"
@@ -124,11 +136,14 @@ def process_image(image_path):
 
         wcs_file = os.path.join(output_location, os.path.splitext(os.path.basename(image_path))[0] + ".wcs")
         solution = extract_from_wcs(wcs_file)
-        print(solution)
+        print(solution[2])
 
+        update_status(os.path.basename(image_path), "success", solution[0], solution[1])
         return True
     except subprocess.CalledProcessError:
         print(f"Error processing {image_path}")
+
+        update_status(os.path.basename(image_path), "failure", None, None)
         return False
 
 def process_all_images():

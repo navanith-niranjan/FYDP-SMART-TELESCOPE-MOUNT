@@ -1,14 +1,19 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
+import shutil
+import os
+import time
 import asyncio
 import serial
+import json
 
 app = FastAPI()
 
 origins = [
     "http://192.168.141.1:3000",
     "http://192.168.141.1:5173",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(
@@ -19,70 +24,105 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class ConnectionManager:
-    def __init__(self):
-        self.client_connections: List[WebSocket] = []
-        self.esp32_connections: List[WebSocket] = []
-
-    async def connect_client(self, websocket: WebSocket):
-        await websocket.accept()
-        self.client_connections.append(websocket)
-        print("Client is connected!")
-
-    # When websocket connection is established between server and ESP32, may not be needed if data is sent from server to ESP32 via serial communication
-    # async def connect_esp32(self, websocket: WebSocket):
-    #     await websocket.accept()
-    #     self.esp32_connections.append(websocket)
-    #     print("ESP32 is connected!")
-    
-    async def send_data_esp32(self, data):
-        # Handle data transfer via wired connection between server and ESP32 
-        loop = asyncio.get_event_loop()
-
-        def write_to_serial(data):
-            port = '/dev/ttyUSB0'
-            baudrate = 115200
-            try:
-                with serial.Serial(port, baudrate, timeout=1) as ser:
-                    ser.write(data)
-                    ser.flush()  
-            except serial.SerialException as e:
-                print(f"Serial communication error: {e}")
-
-        await loop.run_in_executor(None, write_to_serial, data)
-
-        # For sending data when ESP32 connected to wireless Network
-        # for connection in self.esp32_connections:
-        #     await connection.send_bytes(data)
-
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.client_connections:
-            self.client_connections.remove(websocket)
-            print("Client is disconnected!")
-        elif websocket in self.esp32_connections:
-            self.esp32_connections.remove(websocket)
-            print("ESP32 is disconnected!")
-
-# Routing
-
+# API Routing
 @app.get("/")
 async def get():
     return ""
 
-# For D-Pad Movement in real-time using WebSockets
-manager = ConnectionManager()
+UPLOAD_FOLDER = os.path.join("..", "astap", "images", "unstaged")
+STATUS_FILE = os.path.join("..", "astap", "status.json")
 
-@app.websocket("/ws/client")
-async def websocket_client(websocket: WebSocket):
-    await manager.connect_client(websocket)
+@app.post("/api/upload/")
+async def upload_image(file: UploadFile = File(...)):
+    if not os.path.exists(UPLOAD_FOLDER):
+        print
+        raise FileNotFoundError(f"The unstaged folder does not exist: {UPLOAD_FOLDER}")
+
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     
     try:
-        while True:
-            data = await websocket.receive_bytes()
-            print(f"Received from client: {data}")
-            await manager.send_data_esp32(data)
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        print({"message": f"File saved to {file_path}"})
+
+        start_time = time.time()
+        while time.time() - start_time < 30:
+            if os.path.exists(STATUS_FILE):
+                with open(STATUS_FILE, "r") as f:
+                    status_data = json.load(f)
+                
+                if status_data.get("image") == file.filename:
+                    if status_data.get("status") == "success":
+                        return {"message": "Calibration Successful!", "ra": status_data.get("ra"), "dec": status_data.get("dec")}
+                    elif status_data.get("status") == "failure":
+                        return {"message": "Calibration failed"}
+
+            time.sleep(1)
+
+        return {"message": "Calibration timeout"}
+
+    except Exception as e:
+        print({"Error": str(e)})
+
+
+# class ConnectionManager:
+#     def __init__(self):
+#         self.client_connections: List[WebSocket] = []
+#         self.esp32_connections: List[WebSocket] = []
+
+#     async def connect_client(self, websocket: WebSocket):
+#         await websocket.accept()
+#         self.client_connections.append(websocket)
+#         print("Client is connected!")
+
+#     # When websocket connection is established between server and ESP32, may not be needed if data is sent from server to ESP32 via serial communication
+#     # async def connect_esp32(self, websocket: WebSocket):
+#     #     await websocket.accept()
+#     #     self.esp32_connections.append(websocket)
+#     #     print("ESP32 is connected!")
+    
+#     async def send_data_esp32(self, data):
+#         # Handle data transfer via wired connection between server and ESP32 
+#         loop = asyncio.get_event_loop()
+
+#         def write_to_serial(data):
+#             port = '/dev/ttyUSB0'
+#             baudrate = 115200
+#             try:
+#                 with serial.Serial(port, baudrate, timeout=1) as ser:
+#                     ser.write(data)
+#                     ser.flush()  
+#             except serial.SerialException as e:
+#                 print(f"Serial communication error: {e}")
+
+#         await loop.run_in_executor(None, write_to_serial, data)
+
+#         # For sending data when ESP32 connected to wireless Network
+#         # for connection in self.esp32_connections:
+#         #     await connection.send_bytes(data)
+
+#     def disconnect(self, websocket: WebSocket):
+#         if websocket in self.client_connections:
+#             self.client_connections.remove(websocket)
+#             print("Client is disconnected!")
+#         elif websocket in self.esp32_connections:
+#             self.esp32_connections.remove(websocket)
+#             print("ESP32 is disconnected!")
+
+# # For D-Pad Movement in real-time using WebSockets
+# manager = ConnectionManager()
+
+# @app.websocket("/ws/client")
+# async def websocket_client(websocket: WebSocket):
+#     await manager.connect_client(websocket)
+    
+#     try:
+#         while True:
+#             data = await websocket.receive_bytes()
+#             print(f"Received from client: {data}")
+#             await manager.send_data_esp32(data)
+#     except WebSocketDisconnect:
+#         manager.disconnect(websocket)
 
 # Needed if ESP32 is connected to wireless network
 # @app.websocket("/ws/esp32")
