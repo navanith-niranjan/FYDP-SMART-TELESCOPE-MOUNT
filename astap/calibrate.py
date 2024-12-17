@@ -17,7 +17,7 @@ output_location = os.path.join(script_dir, "output")
 astap_cli = "/usr/bin/astap_cli"
 
 # Allowed file extensions
-allowed_extensions = {".jpg", ".png", ".fits"}
+allowed_extensions = {".jpeg",".jpg", ".png", ".fits"}
 
 # Path for status file used for plate solving confirmation
 status_file = os.path.join(script_dir, "status.json")
