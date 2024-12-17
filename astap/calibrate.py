@@ -153,9 +153,11 @@ def process_all_images():
         image_path = os.path.join(unstaged_dir, image)
         
         if process_image(image_path):
-            staged_image_path = os.path.join(staged_dir, image)
-            shutil.move(image_path, staged_image_path)
-            print(f"{image} has been processed and was moved to staged folder.")
+            print(f"{image} has been successfully processed.")
+            
+        staged_image_path = os.path.join(staged_dir, image)
+        shutil.move(image_path, staged_image_path)
+        print(f"{image} has been moved to staged folder.")
 
 while True:
     process_all_images()
