@@ -55,7 +55,7 @@ async def upload_image(file: UploadFile = File(...)):
                     if status_data.get("status") == "success":
                         return {"message": "Calibration Successful!", "ra": status_data.get("ra"), "dec": status_data.get("dec")}
                     elif status_data.get("status") == "failure":
-                        return {"message": "Calibration failed"}
+                        return {"message": "Calibration Failed"}
 
             time.sleep(1)
 

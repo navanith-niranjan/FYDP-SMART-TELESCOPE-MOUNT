@@ -101,7 +101,7 @@ const Catalog = () => {
             </form>  
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[50vh] w-[17.5vw] rounded-md border p-4">
+            <ScrollArea className="h-[58vh] rounded-md border p-4">
               <Table>
                 <TableHeader>
                   <TableRow>

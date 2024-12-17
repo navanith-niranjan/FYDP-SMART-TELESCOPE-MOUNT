@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { useState } from "react";
-import { Camera, Lock, Loader2, AlertCircle} from "lucide-react";
+import { Camera, Lock, Loader2, AlertCircle, CircleCheckBig} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -92,11 +92,18 @@ const Calibrate: React.FC<CalibrateProps> = ({ onImageUpload, onMessage, message
                     )}
                 </CardContent>
 
-                <CardFooter className="flex justify-center">
+                <CardFooter className="flex items-center justify-center">
+                
+                
                 <Alert>
-                    <AlertCircle className="h-4 w-4 mg-1" />
-                    <AlertTitle>{message}</AlertTitle>
+                {message == "Not Calibrated" || message == "Calibration Failed" ? (
+                    <AlertCircle className="h-4 w-4" />
+                ): (
+                    <CircleCheckBig className="h-4 w-4" />
+                )}
+                    <AlertTitle className="p-1">{message}</AlertTitle>
                 </Alert>
+
                 </CardFooter>
             </Card>
         </div>
