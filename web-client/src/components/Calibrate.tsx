@@ -96,7 +96,7 @@ const Calibrate: React.FC<CalibrateProps> = ({ onImageUpload, onMessage, message
                 
                 
                 <Alert>
-                {message == "Not Calibrated" || message == "Calibration Failed" ? (
+                {message == "Not Calibrated" || message == "Calibration Failed" || message == "Calibration Timeout" ? (
                     <AlertCircle className="h-4 w-4" />
                 ): (
                     <CircleCheckBig className="h-4 w-4" />

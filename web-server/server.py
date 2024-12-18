@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Form, File, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import shutil
@@ -7,6 +7,9 @@ import time
 import asyncio
 import serial
 import json
+import struct
+from astropy.coordinates import Angle
+from astropy import units as u
 
 app = FastAPI()
 
@@ -59,11 +62,57 @@ async def upload_image(file: UploadFile = File(...)):
 
             time.sleep(1)
 
-        return {"message": "Calibration timeout"}
+        return {"message": "Calibration Timeout"}
 
     except Exception as e:
         print({"Error": str(e)})
 
+@app.post("/api/locate/")
+async def send_object(rightAscension: str = Form(...), declination: str = Form(...)):
+    # Configure so that it recieves ra and dec, converts to decimals, converts to bytes, send via serial
+    try:
+        ra_deg = Angle(rightAscension, unit=u.hourangle).degree
+        dec_deg = Angle(declination, unit=u.deg).degree
+
+        def compute_checksum(data):
+            checksum = 0
+            for byte in data:
+                checksum += byte
+            checksum &= 0xFF
+            return checksum
+
+        start_byte = 0x01
+        type_byte = 0x02
+        end_byte = 0xFF
+        
+        ra_bytes = struct.pack('d', ra_deg)
+        dec_bytes = struct.pack('d', dec_deg)
+
+        message = bytearray([start_byte, type_byte])
+        message.extend(ra_bytes)
+        message.extend(dec_bytes)
+        checksum = compute_checksum(message)
+        message.extend([checksum])
+        message.extend([end_byte])
+
+        loop = asyncio.get_event_loop()
+
+        def write_to_serial(data):
+            port = '/dev/ttyUSB0'
+            baudrate = 115200
+            try:
+                with serial.Serial(port, baudrate, timeout=1) as ser:
+                    ser.write(data)
+                    ser.flush()  
+            except serial.SerialException as e:
+                print(f"Serial communication error: {e}")
+
+        await loop.run_in_executor(None, write_to_serial, bytes(message))
+        
+        print("Bytes:", ' '.join(f'{byte:02X}' for byte in message))
+
+    except Exception as e:
+        return f"Error with api request to locate object: {e}"
 
 # class ConnectionManager:
 #     def __init__(self):

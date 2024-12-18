@@ -30,9 +30,14 @@ import {
 
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
-const Catalog = () => {
+interface CatalogProps {
+  onLocateObject: (object: string[]) => void;
+}
+
+const Catalog = ({ onLocateObject }: CatalogProps) => {
   const [data, setData] = useState<string[][]>([]);
   const [celestialObjects, setCelestialObjects] = useState<string[]>([]);
+  const [selectedObject, setSelectedObject] = useState<string>("");
 
   useEffect(() => {
     fetch("messier_catalog.csv")
@@ -75,6 +80,20 @@ const Catalog = () => {
     });
   };
 
+  const handleStartTracking = () => {
+    if (selectedObject) {
+      const selectedRow = data.find((row) => row[0] === selectedObject);
+    
+      if (!selectedRow) {
+        console.error(`No data found for object: ${selectedObject}`);
+        return;
+      }
+      onLocateObject(selectedRow);
+    } else {
+      console.error("No celestial object selected");
+    }
+  };
+
     return (
       <div>
         <Card>
@@ -83,7 +102,7 @@ const Catalog = () => {
               <div className="grid w-full items-center gap-4">
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="framework">SELECT A CELESTIAL OBJECT</Label>
-                  <Select>
+                  <Select onValueChange={(value) => setSelectedObject(value)}>
                     <SelectTrigger id="framework">
                       <SelectValue />
                     </SelectTrigger>
@@ -96,7 +115,7 @@ const Catalog = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button>Start Tracking</Button>
+                <Button onClick={handleStartTracking}>Start Tracking</Button>
               </div>
             </form>  
           </CardHeader>
