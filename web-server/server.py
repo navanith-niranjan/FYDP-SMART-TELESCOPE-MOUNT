@@ -14,6 +14,7 @@ from astropy import units as u
 app = FastAPI()
 
 origins = [
+    "http://telescope.io", # Frontend served via nginx
     "http://192.168.141.1:3000",
     "http://192.168.141.1:5173",
     "http://localhost:5173",
