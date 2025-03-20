@@ -9,7 +9,6 @@ charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 contourpy==1.3.0
-COTS_star_tracker @ file:///C:/Users/navan/Desktop/University%20of%20Waterloo/FYDP%20CAPSTONE/fydp-smart-telescope-mount/star-tracking-pi5/py_src/star_tracker
 cycler==0.12.1
 dnspython==2.6.1
 docutils==0.21.2
