@@ -3,8 +3,10 @@ import * as React from "react";
 import { useState } from "react";
 import { Camera, Lock, Loader2, AlertCircle, CircleCheckBig} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import {
     Card,

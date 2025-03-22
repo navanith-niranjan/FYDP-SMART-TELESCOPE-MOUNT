@@ -72,8 +72,76 @@ async def upload_image(file: UploadFile = File(...)):
 async def send_object(rightAscension: str = Form(...), declination: str = Form(...)):
     # Configure so that it recieves ra and dec, converts to decimals, converts to bytes, send via serial
     try:
-        ra_deg = Angle(rightAscension, unit=u.hourangle).degree
-        dec_deg = Angle(declination, unit=u.deg).degree
+        if rightAscension == "Sun" or rightAscension == "Moon":
+
+            if rightAscension == "Sun":
+                message = bytearray([0x01, 0x01, 0x01, 0xFF])
+            elif rightAscension == "Moon":
+                message = bytearray([0x01, 0x02, 0x02, 0xFF])
+
+            def write_to_serial(data):
+                port = '/dev/ttyUSB0'
+                baudrate = 115200
+                try:
+                    with serial.Serial(port, baudrate, timeout=1) as ser:
+                        ser.write(data)
+                        ser.flush()  
+                except serial.SerialException as e:
+                    print(f"Serial communication error: {e}")
+
+            await loop.run_in_executor(None, write_to_serial, bytes(message))
+
+            print("Requesting Sun or Moon Tracking...")
+
+        else:
+            ra_deg = Angle(rightAscension, unit=u.hourangle).degree
+            dec_deg = Angle(declination, unit=u.deg).degree
+
+            def compute_checksum(data):
+                checksum = 0
+                for byte in data:
+                    checksum += byte
+                checksum &= 0xFF
+                return checksum
+
+            start_byte = 0x01
+            type_byte = 0x02
+            end_byte = 0xFF
+            
+            ra_bytes = struct.pack('d', ra_deg)
+            dec_bytes = struct.pack('d', dec_deg)
+
+            message = bytearray([start_byte, type_byte])
+            message.extend(ra_bytes)
+            message.extend(dec_bytes)
+            checksum = compute_checksum(message)
+            message.extend([checksum])
+            message.extend([end_byte])
+
+            loop = asyncio.get_event_loop()
+
+            def write_to_serial(data):
+                port = '/dev/ttyUSB0'
+                baudrate = 115200
+                try:
+                    with serial.Serial(port, baudrate, timeout=1) as ser:
+                        ser.write(data)
+                        ser.flush()  
+                except serial.SerialException as e:
+                    print(f"Serial communication error: {e}")
+
+            await loop.run_in_executor(None, write_to_serial, bytes(message))
+            
+            print("Bytes:", ' '.join(f'{byte:02X}' for byte in message))
+
+    except Exception as e:
+        return f"Error with api request to locate object: {e}"
+
+@app.post("/api/calibrate/")
+async def send_calibration(ra: str = Form(...), dec: str = Form(...)):
+    try:
+        ra_deg = Angle(ra, unit=u.hourangle).degree
+        dec_deg = Angle(dec, unit=u.deg).degree
 
         def compute_checksum(data):
             checksum = 0
@@ -83,7 +151,7 @@ async def send_object(rightAscension: str = Form(...), declination: str = Form(.
             return checksum
 
         start_byte = 0x01
-        type_byte = 0x02
+        type_byte = 0x01 # Calibration Type is 0x01
         end_byte = 0xFF
         
         ra_bytes = struct.pack('d', ra_deg)
@@ -114,7 +182,7 @@ async def send_object(rightAscension: str = Form(...), declination: str = Form(.
 
     except Exception as e:
         return f"Error with api request to locate object: {e}"
-
+    
 # class ConnectionManager:
 #     def __init__(self):
 #         self.client_connections: List[WebSocket] = []

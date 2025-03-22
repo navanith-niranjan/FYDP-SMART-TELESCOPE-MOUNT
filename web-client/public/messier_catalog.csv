@@ -1,4 +1,6 @@
 M,NGC,TYPE,CONS,RA,DEC,MAG,SIZE,DIST (ly),VIEWING SEASON,VIEWING DIFFICULTY
+Sun,-,-,-,-,-,-,-,-,-,-
+Moon,-,-,-,-,-,-,-,-,-,-
 M1,NGC 1952 Crab Nebula,Supernova Remnant,Taurus,5h 34.5m,22°1,8.4,6.0x4.0,"6,300",Winter,Moderate
 M2,NGC 7089,Globular Cluster,Aquarius,21h 33.5m,-0°49,6.5,12.9,"37,500",Autumn,Easy
 M3,NGC 5272,Globular Cluster,Canes Venatici,13h 42.2m,28°23,6.2,16.2,"33,900",Spring,Easy

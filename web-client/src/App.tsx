@@ -3,9 +3,10 @@ import axios from "axios";
 
 import Calibrate from "./components/Calibrate";
 import Catalog from "./components/Catalog";
+import SettingsMenu from "./components/SettingsMenu";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DraftingCompass, Locate} from "lucide-react";
+import { DraftingCompass, Locate, Settings} from "lucide-react";
 
 const App = () => {
   // http://localhost:8000/
@@ -48,9 +49,22 @@ const App = () => {
   };
 
   const handleLocateObject = async (selectedRow: string[]) => {
-  
-    const rightAscension = selectedRow[4];
-    const declination = selectedRow[5];
+
+    let rightAscension: string = "";
+    let declination: string = "";
+
+    if (selectedRow[0] == "Sun") {
+      rightAscension = "Sun";
+      declination = "Sun";
+    }
+    else if (selectedRow[0] == "Moon") {
+      rightAscension = "Moon";
+      declination = "Moon";
+    }
+    else {
+      rightAscension = selectedRow[4];
+      declination = selectedRow[5];
+    };
   
     if (!rightAscension || !declination) {
       console.error("RA or Dec values missing for the selected object.");
@@ -83,16 +97,25 @@ const App = () => {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <Tabs defaultValue="calibrate" className="w-full h-full max-w-md">
-        <TabsList className="grid w-full grid-cols-2">
+
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="calibrate">< DraftingCompass /></TabsTrigger>
           <TabsTrigger value="locate">< Locate /></TabsTrigger>
+          <TabsTrigger value="settings">< Settings /></TabsTrigger>
         </TabsList>
+
         <TabsContent value="calibrate">
           <Calibrate onImageUpload={handleImageUpload} onMessage={setCalibrateMessage} message={calibrateMessage}/>
         </TabsContent>
+
         <TabsContent value="locate">
           <Catalog onLocateObject={handleLocateObject} />
         </TabsContent>
+
+        <TabsContent value="settings">
+          <SettingsMenu />
+        </TabsContent>
+      
       </Tabs>
     </div>
   );
