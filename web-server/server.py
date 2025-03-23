@@ -75,7 +75,7 @@ async def send_object(rightAscension: str = Form(...), declination: str = Form(.
         if rightAscension == "Sun" or rightAscension == "Moon":
 
             if rightAscension == "Sun":
-                message = bytearray([0x01, 0x01, 0x01, 0xFF])
+                message = bytearray([0x01, 0x02, 0x01, 0xFF])
             elif rightAscension == "Moon":
                 message = bytearray([0x01, 0x02, 0x02, 0xFF])
 
