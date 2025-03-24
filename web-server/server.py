@@ -140,7 +140,7 @@ async def send_object(rightAscension: str = Form(...), declination: str = Form(.
 @app.post("/api/calibrate/")
 async def send_calibration(ra: str = Form(...), dec: str = Form(...)):
     try:
-        ra_deg = Angle(ra, unit=u.hourangle).degree
+        ra_deg = Angle(ra, unit=u.deg).degree
         dec_deg = Angle(dec, unit=u.deg).degree
 
         def compute_checksum(data):
